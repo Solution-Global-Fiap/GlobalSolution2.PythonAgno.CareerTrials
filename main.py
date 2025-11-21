@@ -10,6 +10,7 @@ from Utils import Utils
 from dtos.ChallengesResponse import ChallengesResponse
 from dtos.ErrorResponse import ErrorResponse
 from dtos.MessageRequest import MessageRequest
+from dtos.MessageResponse import MessageResponse
 
 logging.basicConfig(
     level=logging.INFO,
@@ -81,7 +82,21 @@ async def send_message(session_id: str, user_id: str, body: MessageRequest):
         agent = AgentFactory.get_or_create_agent(session_id, user_id)
         response = agent.run(body.message)
 
-        return {"response": response.content}
+        cleaned_response = Utils.extract_user_response(response.content)
+        
+        # If we got internal response multiple times, retry with explicit instruction
+        retry_count = 0
+        while Utils.is_internal_response(cleaned_response) and retry_count < 2:
+            logger.warning(f"Retry {retry_count + 1}: Got internal response, asking again")
+            response = agent.run("Por favor, responda diretamente ao usuário em português, não em formato JSON ou tarefa.")
+            cleaned_response = Utils.extract_user_response(response.content)
+            retry_count += 1
+        
+        return MessageResponse(
+            response=cleaned_response,
+            session_id=session_id,
+            user_id=user_id
+        )
     except Exception as e:
         logger.error(f"Error processing message: {e}", exc_info=True)
         raise HTTPException(
@@ -117,7 +132,7 @@ async def generate_challenges(session_id: str, user_id: str):
                     error="Failed to parse challenges",
                     detail=str(e),
                     raw_output=raw_content
-                ).dict()
+                ).model_dump()
             )
         
         if not isinstance(challenges_data, list):
