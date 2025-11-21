@@ -3,8 +3,8 @@ import os
 from agno.agent import Agent
 from agno.models.google import Gemini
 from agno.db.sqlite import SqliteDb
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field, field_validator
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -75,6 +75,21 @@ def create_agent(session_id: str, user_id: str) -> Agent:
         """
     )
 
+class MessageRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=2000)
+    
+    @field_validator('message')
+    def message_not_empty(cls, v):
+        if not v.strip():
+            raise ValueError('Message cannot be empty')
+        return v.strip()
+
+class MessageResponse(BaseModel):
+    response: str
+    session_id: str
+    user_id: str
+    is_complete: bool = False
+
 app = FastAPI()
 
 app.add_middleware(
@@ -103,13 +118,30 @@ async def health():
         "model": os.getenv("DEFAULT_MODEL")
     }
 
-@app.post("/session/{session_id}/{user_id}/message")
-async def handle_message(session_id: str, user_id: str, body: Body):
-    agent = create_agent(session_id, user_id)
+@app.post("/session/{session_id}/{user_id}/message", response_model=MessageResponse)
+async def handle_message(session_id: str, user_id: str, body: MessageRequest):
+    """
+    Send a message to the AI agent
+    
+    - **session_id**: Unique session identifier
+    - **user_id**: User identifier
+    - **message**: User's message
+    """
+    try:
+        agent = create_agent(session_id, user_id)
+        response = agent.run(body.message)
 
-    response = agent.run(body.message)
-
-    return {"response": response.content}
+        return MessageResponse(
+            response=response.content,
+            session_id=session_id,
+            user_id=user_id,
+            is_complete=("GENERATE_CHALLENGES" in body.message)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process message: {str(e)}"
+        )
 
 @app.post("/session/{session_id}/{user_id}/complete")
 async def complete(session_id: str, user_id: str):
