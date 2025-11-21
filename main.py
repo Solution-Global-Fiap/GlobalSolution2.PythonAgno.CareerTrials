@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -67,6 +68,17 @@ async def health_check():
         "model": Config.DEFAULT_MODEL
     }
 
+@app.post("/session/create/{user_id}")
+async def create_session(user_id: str):
+    session_id = f"s_{uuid.uuid4().hex[:10]}"
+
+    AgentFactory.get_or_create_agent(session_id, user_id)
+
+    return {
+        "session_id": session_id,
+        "user_id": user_id
+    }
+
 @app.post("/session/{session_id}/{user_id}/message")
 async def send_message(session_id: str, user_id: str, body: MessageRequest):
     """
@@ -84,7 +96,6 @@ async def send_message(session_id: str, user_id: str, body: MessageRequest):
 
         cleaned_response = Utils.extract_user_response(response.content)
         
-        # If we got internal response multiple times, retry with explicit instruction
         retry_count = 0
         while Utils.is_internal_response(cleaned_response) and retry_count < 2:
             logger.warning(f"Retry {retry_count + 1}: Got internal response, asking again")
@@ -117,8 +128,7 @@ async def generate_challenges(session_id: str, user_id: str):
         
         agent = AgentFactory.get_or_create_agent(session_id, user_id)
         result = agent.run("GENERATE_CHALLENGES")
-        
-        # Clean and parse JSON
+
         raw_content = result.content.strip()
         cleaned_content = Utils.clean_json(raw_content)
         
