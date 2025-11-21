@@ -7,15 +7,13 @@ ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /app
 
-RUN mkdir -p /app/tmp
-
 COPY pyproject.toml uv.lock ./
 
 RUN uv sync --frozen
 
 COPY . .
 
-RUN chmod -R 777 /app/tmp
+ENV DB_FILE=/tmp/agents.db
 
 EXPOSE 8000
 

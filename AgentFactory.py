@@ -88,6 +88,7 @@ class AgentFactory:
     def _create_agent(cls, session_id: str, user_id: str) -> Agent:
         """Create a new agent instance"""
         db_path = Path(Config.DB_FILE)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         
         return Agent(
             session_id=session_id,
