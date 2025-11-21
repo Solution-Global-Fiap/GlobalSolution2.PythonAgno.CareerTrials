@@ -12,6 +12,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class Utils:
+    def fix_levels(challenges, group_size=2):
+        """
+        Assigns sequential levels starting at 1.
+        Each group_size challenges share the same level.
+        """
+        level = 1
+
+        for index, challenge in enumerate(challenges):
+            challenge.level = level
+
+            if (index + 1) % group_size == 0:
+                level += 1
+
+        return challenges
+
+    def add_ids_to_challenges(challenges):
+        for i, challenge in enumerate(challenges, start=1):
+            challenge.id = i
+
+            if challenge.questions:
+                for qi, question in enumerate(challenge.questions, start=1):
+                    question.id = qi
+        
+        return challenges
+
     def is_internal_response(content: str) -> bool:
         """Check if response is internal reasoning instead of user-facing"""
         content_lower = content.lower().strip()
@@ -29,7 +54,7 @@ class Utils:
                 # If it has 'task' key, it's internal reasoning
                 if isinstance(parsed, dict) and 'task' in parsed:
                     return True
-            except:
+            except Exception:
                 pass
     
         # Check for internal task keywords

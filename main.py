@@ -159,6 +159,9 @@ async def generate_challenges(session_id: str, user_id: str):
                 detail="No valid challenges generated"
             )
         
+        validated_challenges = Utils.add_ids_to_challenges(validated_challenges)
+        validated_challenges = Utils.fix_levels(validated_challenges)
+
         logger.info(f"Successfully generated {len(validated_challenges)} challenges")
         
         return ChallengesResponse(

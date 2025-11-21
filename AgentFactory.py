@@ -49,8 +49,8 @@ Quando você receber o comando "GENERATE_CHALLENGES", mude para a Fase 2.:
   {{
     "title": "Título do desafio em português",
     "description": "Descrição detalhada do desafio em português",
-    "type": "Código | Quiz | Projeto | Leitura",
-    "difficulty": "Fácil | Médio | Difícil",
+    "type": "Code | Quiz | Project",
+    "difficulty": "Easy | Medium | Hard",
     "xp": <número entre 10-500>,
     "level": <número entre 1-10>,
     "estimatedTime": "30min | 1h | 2h | 4h | 1 dia | 1 semana",
