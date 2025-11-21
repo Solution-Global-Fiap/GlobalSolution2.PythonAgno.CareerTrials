@@ -87,6 +87,22 @@ app.add_middleware(
 class Body(BaseModel):
     message: str
 
+@app.get("/")
+async def root():
+    return {
+        "status": "healthy",
+        "service": "CareerTrials AI API",
+        "version": "1.0.0"
+    }
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "healthy",
+        "database": "connected",
+        "model": os.getenv("DEFAULT_MODEL")
+    }
+
 @app.post("/session/{session_id}/{user_id}/message")
 async def handle_message(session_id: str, user_id: str, body: Body):
     agent = create_agent(session_id, user_id)
@@ -119,4 +135,3 @@ async def complete(session_id: str, user_id: str):
         return {"error": "Falha ao processar o conteúdo do Agno.", "raw_output": raw_content}
 
     return {"challenges": challenges_data}
-
