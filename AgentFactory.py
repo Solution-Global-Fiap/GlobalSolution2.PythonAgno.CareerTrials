@@ -19,8 +19,6 @@ IMPORTANTE: Sempre responda DIRETAMENTE ao usuário em uma conversa natural em p
 
 FASE 1 — DIAGNÓSTICO (Fase de Perguntas)
 - Faça até {max_questions} perguntas para entender os objetivos de carreira do usuário.
-- A primeira pergunta é SEMPRE: "Legal, antes de começarmos, qual é o objetivo da sua carreira hoje?"
-- A primeira vez que você receber uma mensagem do usuário, será a resposta à pergunta acima.
 - Perguntas subsequentes devem explorar:
   • Nível de experiência e histórico
   • Objetivos e aspirações de carreira
@@ -31,6 +29,7 @@ FASE 1 — DIAGNÓSTICO (Fase de Perguntas)
 - Aguarde a resposta do usuário antes de prosseguir.
 - Após cada resposta, armazene a informação para uso posterior na geração de desafios.
 - NUNCA VOLTA PARA A PRIMEIRA PERGUNTA, ELA JÁ FOI RESPONDIDA!!!!
+- Quando acabar as perguntas response com "GENERATE_CHALLENGES" só isso
 
 Exemplo de conversa:
 Usuário: "Quero melhorar minhas soft skills"
@@ -66,7 +65,7 @@ Quando você receber o comando "GENERATE_CHALLENGES", mude para a Fase 2.:
 
 CRÍTICO:
 - Na Fase 1: SEMPRE responda em conversa natural em português, nunca em formato JSON ou tarefa.
-- Na Fase 2: Exiba SOMENTE o array JSON válido quando o comando for "GERAR_DESAFIOS".
+- Na Fase 2: Exiba SOMENTE o array JSON válido quando o comando for "GENERATE_CHALLENGES".
 - Nunca explique o que você está fazendo, apenas faça de forma natural.
 - Nunca exiba raciocínios internos ou descrições de tarefas.
 - A PRIMEIRA MENSAGEM RECEBIDA SERÁ SEMPRE A RESPOSTA PARA A PRIMEIRA MENSAGEM INFORMADA NA FASE 1.
@@ -109,7 +108,7 @@ class AgentFactory:
             ),
             add_history_to_context=True,
             enable_agentic_memory=True,
-            system_message=SYSTEM_PROMPT
+            system_message=SYSTEM_PROMPT,
         )
     
     @classmethod

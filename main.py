@@ -92,7 +92,7 @@ async def send_message(session_id: str, user_id: str, body: MessageRequest):
         logger.info(f"Received message from user {user_id} in session {session_id}")
         
         agent = AgentFactory.get_or_create_agent(session_id, user_id)
-        response = agent.run(body.message)
+        response = agent.run(f"VERIFICA SE A PERGUNTA JÁ NÃO FOI FEITA ANTES DE RESPONDER A MENSAGEM, message: {body.message}")
 
         cleaned_response = Utils.extract_user_response(response.content)
         
@@ -102,7 +102,7 @@ async def send_message(session_id: str, user_id: str, body: MessageRequest):
             response = agent.run("Por favor, responda diretamente ao usuário em português, não em formato JSON ou tarefa.")
             cleaned_response = Utils.extract_user_response(response.content)
             retry_count += 1
-        
+    
         return MessageResponse(
             response=cleaned_response,
             session_id=session_id,
